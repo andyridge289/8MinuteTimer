@@ -13,7 +13,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 
-public class Settings extends PreferenceActivity implements Constants, OnSharedPreferenceChangeListener
+public class Settings extends PreferenceActivity implements OnSharedPreferenceChangeListener
 {	
 	private final int CHECK_TTS_AVAILABILITY = 0;
 	private SharedPreferences sharedPreferences = null;

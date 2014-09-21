@@ -12,7 +12,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class Stats extends Activity implements Constants, OnItemClickListener
+public class Stats extends Activity implements OnItemClickListener
 {	
 	// The names of the things in the list.
 	private String[] linkNames = { "8 Minute Abs", "8 Minute Arms", "8 Minute Legs", "8 Minute Buns" };

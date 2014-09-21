@@ -5,7 +5,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-public abstract class Archive implements Constants 
+import static com.andyridge.minutetimerlite.lib.Constants.*;
+
+public abstract class Archive
 {	
 	public static void saveMessage(int exercise, int numComplete, long time)
 	{

@@ -1,43 +1,47 @@
 package com.andyridge.minutetimerlite;
 
-import android.app.Activity;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
+import android.media.AudioManager;
+import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 import com.andyridge.minutetimerlite.lib.Constants;
 
+import java.util.HashMap;
+
+import static com.andyridge.minutetimerlite.lib.Constants.LOCALES;
+import static com.andyridge.minutetimerlite.lib.Constants.TAG;
+
 
 public class Home extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TextToSpeech.OnInitListener {
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
+    private static TextToSpeech tts;
+    private HashMap<String, String> alarmStream;
+
     private CharSequence mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        tts = new TextToSpeech(this, this);
+
+        alarmStream = new HashMap<String, String>();
+        alarmStream.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                String.valueOf(AudioManager.STREAM_ALARM));
+
+        setVolumeControlStream(AudioManager.STREAM_ALARM);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -52,24 +56,33 @@ public class Home extends ActionBarActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
+
+        Fragment active = null;
+
+        if (position == NavigationDrawerFragment.Page.ABS.index) {
+            active = TimerFragment.newInstance(Constants.Exercise.ABS);
+        } else if (position == NavigationDrawerFragment.Page.ARMS.index) {
+            active = TimerFragment.newInstance(Constants.Exercise.ARMS);
+        } else if (position == NavigationDrawerFragment.Page.LEGS.index) {
+            active = TimerFragment.newInstance(Constants.Exercise.LEGS);
+        } else if (position == NavigationDrawerFragment.Page.BUNS.index) {
+            active = TimerFragment.newInstance(Constants.Exercise.BUNS);
+        } else if (position == NavigationDrawerFragment.Page.STRETCH.index) {
+            active = TimerFragment.newInstance(Constants.Exercise.STRETCH);
+        } else if (position == NavigationDrawerFragment.Page.SETTINGS.index) {
+            active = SettingsFragment.newInstance();
+        }
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, TimerFragment.newInstance(Constants.Exercise.ABS))
+                .replace(R.id.container, active)
                 .commit();
     }
 
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
-        }
+    public void setTitle(CharSequence newTitle) {
+        super.setTitle(newTitle);
+        mTitle = newTitle;
+        restoreActionBar();
     }
 
     public void restoreActionBar() {
@@ -86,7 +99,6 @@ public class Home extends ActionBarActivity
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.home, menu);
             restoreActionBar();
             return true;
         }
@@ -99,17 +111,39 @@ public class Home extends ActionBarActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
+    }
+
+    public void onDestroy() {
+
+        //Close the Text to Speech Library
+        if(tts != null) {
+
+            tts.stop();
+            tts.shutdown();
+            Log.d(TAG, "TTS Destroyed");
         }
-        return super.onOptionsItemSelected(item);
     }
 
     public void onBackPressed() {
-
-
-
+        // TODO Call back pressed on the right fragment
         super.onBackPressed();
     }
 
+    public static void resetLocale()
+    {
+        if(tts != null)
+            tts.setLanguage(LOCALES[MinuteMenu.locale]);
+    }
+
+
+    public void onInit(int status)
+    {
+        tts.setLanguage(LOCALES[MinuteMenu.locale]);
+    }
+
+
+    public void speak(String word) {
+        tts.speak(word, TextToSpeech.QUEUE_ADD, alarmStream);
+    }
 }

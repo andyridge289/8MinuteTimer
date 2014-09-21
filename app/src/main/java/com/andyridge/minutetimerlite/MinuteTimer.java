@@ -24,10 +24,9 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.andyridge.minutetimerlite.lib.Archive;
-import com.andyridge.minutetimerlite.lib.Constants;
-import com.andyridge.minutetimerlite.lib.Lib;
+import static com.andyridge.minutetimerlite.lib.Constants.*;
 
-public class MinuteTimer extends Activity implements OnClickListener, OnInitListener, Constants
+public class MinuteTimer extends Activity implements OnClickListener, OnInitListener
 {
 	private TextView nameText;
 	private TextView nextText;

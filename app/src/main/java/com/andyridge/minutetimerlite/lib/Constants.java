@@ -9,14 +9,22 @@ public abstract class Constants
 	// TODO Fix the timings for the 8 minute buns
 
     public static enum Exercise {
-        ABS(0, "8 Minute Abs");
+        ABS(0, "8 Minute Abs", TIMING_ABS, NAME_ABS),
+        ARMS(1, "8 Minute Arms", TIMING_ARMS, NAME_ARMS),
+        LEGS(2, "8 Minute Legs", TIMING_LEGS, NAME_LEGS),
+        BUNS(3, "8 Minute Buns", TIMING_BUNS, NAME_BUNS),
+        STRETCH(4, "8 Minute Stretch", TIMING_STRETCH, NAME_STRETCH);
 
         public int index;
         public String name;
+        public int[] timings;
+        public String[] names;
 
-        Exercise(int index, String name) {
+        Exercise(int index, String name, int[] timings, String[] names) {
             this.index = index;
             this.name = name;
+            this.timings = timings;
+            this.names = names;
         }
     }
 	
@@ -24,8 +32,7 @@ public abstract class Constants
 	public static final String NAMES = "NAMES";
 	public static final String NAME = "NAME";
 	public static final String VALUE = "VALUE";
-	public static final String BUNDLE = "BUNDLE";
-	
+
 	public static final String TAG = "8MIN";
 	
 	public static final String ABS = "8 Minute Abs";
@@ -33,8 +40,6 @@ public abstract class Constants
 	public static final String LEGS = "8 Minute Legs";
 	public static final String BUNS = "8 Minute Buns";
 	public static final String STRETCH = "8 Minute Stretch";
-	
-	public static final int INTERVAL = 1000;
 	
 	public static final int RUNNING = 0;
 	public static final int PAUSED = 1;
@@ -141,5 +146,5 @@ public abstract class Constants
 	public static enum Progress
 	{
 		STARTED, COMPLETED
-	};
+	}
 }

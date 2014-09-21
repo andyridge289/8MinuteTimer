@@ -1,6 +1,7 @@
 package com.andyridge.minutetimerlite;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.media.AudioManager;
@@ -26,15 +27,6 @@ import java.util.HashMap;
 
 import static com.andyridge.minutetimerlite.lib.Constants.*;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link TimerFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link TimerFragment#newInstance} factory method to
- * create an instance of this fragment.
- *
- */
 public class TimerFragment extends Fragment {
     private static final String EXERCISE = "exercise";
 
@@ -55,10 +47,7 @@ public class TimerFragment extends Fragment {
 
     private ToneGenerator t = new ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME);
 
-    private int[] timings;
-    private String[] names;
-    private String name;
-    private int exercise;
+    private Exercise exercise;
 
     private int index = 0;
     private int pauseTime = 0;
@@ -68,9 +57,6 @@ public class TimerFragment extends Fragment {
     private long startTime = -1;
 
     public static PowerManager.WakeLock wakeLock;
-
-    private static TextToSpeech tts;
-    private HashMap<String, String> alarmStream;
 
     private final Runnable countdownTask = new Runnable()
     {
@@ -92,23 +78,23 @@ public class TimerFragment extends Fragment {
             seconds += pauseTime;
 
             // Work out what to set the text to, and whether to stop
-            if(seconds < timings[index])
+            if(seconds < exercise.timings[index])
             {
-                currentTime = timings[index] - seconds;
+                currentTime = exercise.timings[index] - seconds;
                 //countdownText.setText("" + currentTime);
-                pie.goToIndex(seconds, timings[index], true);
+                pie.goToIndex(seconds, exercise.timings[index], true);
 
                 handler.postDelayed(this, 1000);
 
-                if(seconds == timings[index] - 1 && index < timings.length - 1 && MinuteMenu.readAloud)
+                if(seconds == exercise.timings[index] - 1 && index < exercise.timings.length - 1 && MinuteMenu.readAloud)
                 {
-                    tts.speak(names[index + 1], TextToSpeech.QUEUE_ADD, alarmStream);
+                    ((Home) getActivity()).speak(exercise.names[index + 1]);
                 }
             }
             else
             {
 
-                if(index < timings.length - 1)
+                if(index < exercise.timings.length - 1)
                 {
                     // Create a new timer for the next exercise.
                     pauseTime = 0;
@@ -125,7 +111,7 @@ public class TimerFragment extends Fragment {
                 {
                     // Beep
                     t.startTone(TONES[MinuteMenu.sound], 1000);
-                    Archive.saveMessage(exercise, Constants.Progress.COMPLETED.ordinal(), System.currentTimeMillis());
+                    Archive.saveMessage(exercise.index, Constants.Progress.COMPLETED.ordinal(), System.currentTimeMillis());
                     // We are done.
                     doneAlert();
                 }
@@ -157,7 +143,7 @@ public class TimerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            exercise = getArguments().getInt(EXERCISE);
+            exercise = Exercise.values()[getArguments().getInt(EXERCISE)];
         }
     }
 
@@ -165,196 +151,146 @@ public class TimerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_timer, container, false);
+        View v = inflater.inflate(R.layout.timer, container, false);
 
-        //        // Set up the text to speech service
-//        tts = new TextToSpeech(this, this);
-//
-//        alarmStream = new HashMap<String, String>();
-//        alarmStream.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
-//                String.valueOf(AudioManager.STREAM_ALARM));
-//
-//        setVolumeControlStream(AudioManager.STREAM_ALARM);
-//
-//        super.onCreate(icicle);
-//        setContentView(R.layout.timer);
-//
-//        startButton = (Button) findViewById(R.id.startButton);
-//        startButton.setOnClickListener(this);
-//
-//        stopButton = (Button) findViewById(R.id.stopButton);
-//        stopButton.setOnClickListener(this);
-//
-//        backButton = (Button) findViewById(R.id.backButton);
-//        backButton.setOnClickListener(this);
-//
-//        pauseButton = (Button) findViewById(R.id.pauseButton);
-//        pauseButton.setOnClickListener(this);
-//
-//        startRow = (TableRow) findViewById(R.id.startRow);
-//        stopRow = (TableRow) findViewById(R.id.stopRow);
-//
-////        countdownText = (TextView) findViewById(R.id.countdown);
-//        nameText = (TextView) findViewById(R.id.name);
-//        nextText = (TextView) findViewById(R.id.nextText);
-//
-//        Bundle b = this.getIntent().getExtras();
-//        timings = b.getIntArray(TIMING);
-//        names = b.getStringArray(NAMES);
-//        name = b.getString(NAME);
-//        exercise = b.getInt(VALUE);
-//
-//        Log.d(TAG, name);
-//
-//        pie = (PieView) findViewById(R.id.pieview);
-//        pie.goToStart(timings[0], true);
-//
-//
-//        //countdownText.setText("" + timings[0]);
-//        nameText.setText(names[0]);
-//        nextText.setText(names[1]);
-//        this.setTitle(name);
-//
-//        wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
-//
-//        // Get the wake lock if we need to keep the screen awake.
-//        if(MinuteMenu.keepAwake)
-//        {
-//            if(!wakeLock.isHeld())
-//            {
-//                wakeLock.acquire();
-//            }
-//        }
+        startButton = (Button) v.findViewById(R.id.startButton);
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View vv) {
+                if(state == PAUSED)
+                    resume();
+                else
+                    start();
+            }
+        });
+
+        stopButton = (Button) v.findViewById(R.id.stopButton);
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View vv) {
+                stop();
+            }
+        });
+
+        backButton = (Button) v.findViewById(R.id.backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View vv) {
+                stop();
+            }
+        });
+
+        pauseButton = (Button) v.findViewById(R.id.pauseButton);
+        pauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View vv) {
+                pause();
+            }
+        });
+
+        startRow = (TableRow) v.findViewById(R.id.startRow);
+        stopRow = (TableRow) v.findViewById(R.id.stopRow);
+
+        nameText = (TextView) v.findViewById(R.id.name);
+        nextText = (TextView) v.findViewById(R.id.nextText);
+
+        pie = (PieView) v.findViewById(R.id.pieview);
+        pie.goToStart(exercise.timings[0], true);
+
+        nameText.setText(exercise.names[0]);
+        nextText.setText(exercise.names[1]);
+        getActivity().setTitle(exercise.name);
+
+        wakeLock = ((PowerManager) getActivity().getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Tag");
+
+        // Get the wake lock if we need to keep the screen awake.
+        if(MinuteMenu.keepAwake) {
+            if(wakeLock != null && !wakeLock.isHeld())
+            {
+                wakeLock.acquire();
+            }
+        }
 
         return v;
     }
 
     /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
+     * Starts the timer.
      */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+    private void start()
+    {
+        pauseTime = 0;
+        pie.goToStart(exercise.timings[0], true);
+
+        if(index < exercise.timings.length - 1)
+        {
+            nextText.setText(exercise.names[index + 1]);
+        }
+        else
+        {
+            nextText.setText("None");
+        }
+
+        nameText.setText(exercise.names[index]);
+
+        if(state != PAUSED && MinuteMenu.readAloud)
+            ((Home) getActivity()).speak(exercise.names[index]);
+
+        state = RUNNING;
+        startRow.setVisibility(View.GONE);
+        stopRow.setVisibility(View.VISIBLE);
+
+        Archive.saveMessage(exercise.index, Constants.Progress.STARTED.ordinal(), System.currentTimeMillis());
+        startTimer(0);
     }
 
-//    @Override
-//    public void onCreate(Bundle icicle)
-//    {
+    private void resume()
+    {
+        startRow.setVisibility(View.GONE);
+        stopRow.setVisibility(View.VISIBLE);
 
-//    }
-//
-//
-//    @Override
-//    public void onClick(View v)
-//    {
-//        if(v.equals(startButton))
-//        {
-//            if(state == PAUSED)
-//                resume();
-//            else
-//                start();
-//        }
-//        else if(v.equals(stopButton))
-//        {
-//            stop();
-//        }
-//        else if(v.equals(pauseButton))
-//        {
-//            pause();
-//        }
-//        else if(v.equals(backButton))
-//        {
-//            stop();
-//            finish();
-//        }
-//    }
-//
-//
-//    /**
-//     * Starts the timer.
-//     */
-//    private void start()
-//    {
-//        pauseTime = 0;
-////		countdownText.setText("" + timings[index]);
-//        pie.goToStart(timings[0], true);
-//
-//        if(index < timings.length - 1)
-//        {
-//            nextText.setText(names[index + 1]);
-//        }
-//        else
-//        {
-//            nextText.setText("None");
-//        }
-//
-//        nameText.setText(names[index]);
-//
-//        if(state != PAUSED && MinuteMenu.readAloud)
-//            tts.speak(names[index], TextToSpeech.QUEUE_ADD, alarmStream);
-//
-//        state = RUNNING;
-//        startRow.setVisibility(View.GONE);
-//        stopRow.setVisibility(View.VISIBLE);
-//
-//        Archive.saveMessage(exercise, Constants.Progress.STARTED.ordinal(), System.currentTimeMillis());
-//        startTimer(0);
-//    }
-//
-//    private void resume()
-//    {
-//        startRow.setVisibility(View.GONE);
-//        stopRow.setVisibility(View.VISIBLE);
-//
-//        startTimer(0);
-//    }
-//
-//
-//    /**
-//     * Stops & resets the timer.
-//     */
-//    private void stop()
-//    {
-//        startRow.setVisibility(View.VISIBLE);
-//        stopRow.setVisibility(View.GONE);
-////		countdownText.setText("" + timings[0]);
-//        pie.goToStart(timings[0], true);
-//        nameText.setText(names[0]);
-//        if(index < timings.length - 1)
-//        {
-//            nextText.setText(names[index + 1]);
-//        }
-//        else
-//        {
-//            nextText.setText("None");
-//        }
-//
-//        state = STOPPED;
-//    }
-//
-//
-//    /**
-//     * Pauses the timer
-//     */
-//    private void pause()
-//    {
-//        pauseTime = timings[index] - pie.getCurrentTime(); //Integer.parseInt((String) countdownText.getText());
-//
-//        startRow.setVisibility(View.VISIBLE);
-//        stopRow.setVisibility(View.GONE);
-//
-//        state = PAUSED;
-//        startButton.setText("Resume");
-//    }
-//
-//
+        startTimer(0);
+    }
+
+
+    /**
+     * Stops & resets the timer.
+     */
+    private void stop()
+    {
+        startRow.setVisibility(View.VISIBLE);
+        stopRow.setVisibility(View.GONE);
+//		countdownText.setText("" + timings[0]);
+        pie.goToStart(exercise.timings[0], true);
+        nameText.setText(exercise.names[0]);
+        if(index < exercise.timings.length - 1)
+        {
+            nextText.setText(exercise.names[index + 1]);
+        }
+        else
+        {
+            nextText.setText("None");
+        }
+
+        state = STOPPED;
+    }
+
+
+    /**
+     * Pauses the timer
+     */
+    private void pause()
+    {
+        pauseTime = exercise.timings[index] - pie.getCurrentTime(); //Integer.parseInt((String) countdownText.getText());
+
+        startRow.setVisibility(View.VISIBLE);
+        stopRow.setVisibility(View.GONE);
+
+        state = PAUSED;
+        startButton.setText("Resume");
+    }
+
+
     /**
      * We need to make sure the timer doesn't carry on ticking when they press back. Also
      * close the activity
@@ -363,14 +299,6 @@ public class TimerFragment extends Fragment {
     @Override
     public void onDestroy()
     {
-        //Close the Text to Speech Library
-        if(tts != null) {
-
-            tts.stop();
-            tts.shutdown();
-            Log.d(TAG, "TTS Destroyed");
-        }
-
         super.onDestroy();
     }
 
@@ -391,13 +319,13 @@ public class TimerFragment extends Fragment {
         else
         {
             //countdownText.setText("" + timings[index]);
-            pie.goToStart(timings[index], true);
-            nameText.setText(names[index]);
+            pie.goToStart(exercise.timings[index], true);
+            nameText.setText(exercise.names[index]);
         }
 
-        if(index < timings.length - 1)
+        if(index < exercise.timings.length - 1)
         {
-            nextText.setText(names[index + 1]);
+            nextText.setText(exercise.names[index + 1]);
         }
         else
         {
@@ -415,7 +343,7 @@ public class TimerFragment extends Fragment {
         super.onStop();
 
         // May as well just check this, we always want to surrender the lock.
-        if(wakeLock.isHeld())
+        if(wakeLock != null && wakeLock.isHeld())
         {
             wakeLock.release();
         }
@@ -442,10 +370,9 @@ public class TimerFragment extends Fragment {
         // Reset the page.
         startRow.setVisibility(View.VISIBLE);
         stopRow.setVisibility(View.GONE);
-        pie.goToStart(timings[0], true);
-        //countdownText.setText("" + timings[0]);
-        nameText.setText(names[0]);
-        nextText.setText(names[1]);
+        pie.goToStart(exercise.timings[0], true);
+        nameText.setText(exercise.names[0]);
+        nextText.setText(exercise.names[1]);
 
         // Show the alert dialog - or should that be dialogue?
         AlertDialog alert = dialogBuilder.create();
@@ -521,18 +448,6 @@ public class TimerFragment extends Fragment {
 //                pie.goToStart(timings[index], true);
 //                break;
 //        }
-    }
-
-    public static void resetLocale()
-    {
-        if(tts != null)
-            tts.setLanguage(LOCALES[MinuteMenu.locale]);
-    }
-
-
-    public void onInit(int status)
-    {
-        tts.setLanguage(LOCALES[MinuteMenu.locale]);
     }
 
     public void backPressed() {

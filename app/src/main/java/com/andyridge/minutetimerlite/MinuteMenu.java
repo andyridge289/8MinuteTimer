@@ -27,7 +27,9 @@ import android.widget.Button;
 //TODO Implement some statistics
 	// - Remember what day they did each exercise on, etc
 
-public class MinuteMenu extends Activity implements OnClickListener, Constants
+import static com.andyridge.minutetimerlite.lib.Constants.*;
+
+public class MinuteMenu extends Activity implements OnClickListener
 {
 	private Button absButton;
 	private Button armsButton;
@@ -140,7 +142,7 @@ public class MinuteMenu extends Activity implements OnClickListener, Constants
 			i.putExtra(TIMING, TIMING_ARMS);
 			i.putExtra(NAMES, NAME_ARMS);
 			i.putExtra(NAME, ARMS);
-			i.putExtra(VALUE, Exercise.ARMS.ordinal());
+			i.putExtra(VALUE, Exercise.ARMS.index);
 		}
 		else if(v.equals(legsButton))
 		{

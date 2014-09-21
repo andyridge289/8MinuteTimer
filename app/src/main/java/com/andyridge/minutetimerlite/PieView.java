@@ -9,9 +9,9 @@ import android.graphics.drawable.shapes.ArcShape;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.andyridge.minutetimerlite.lib.Constants;
+import static com.andyridge.minutetimerlite.lib.Constants.*;
 
-public class PieView extends View implements Constants
+public class PieView extends View
 {
 	private int currentAngle = 0;
 	private int currentTime = 0;
