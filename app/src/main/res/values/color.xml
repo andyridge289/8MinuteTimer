@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	
+	<color name="nothing">#00000000</color>
+	<color name="black">#FF000000</color>
+	
+	<color name="background">#FFFFFF</color>
+	<color name="background_light">#EEF</color>
+	<color name="background_dark">#DDF</color>
+	<color name="background_darker">#ABABCD</color>
+	
+	<color name="text">#1541A6</color>
+	<color name="lighter_text">#427BFF</color>
+	
+	<color name="faded">#AFFF</color>
+	
+	<color name="border">#AAA</color>
+	<color name="border_dark">#666</color>
+	
+	
+	<color name="red">#F00</color>
+	<color name="green">#0F0</color>
+	<color name="blue">#00F</color>
+	<color name="white">#FFF</color>
+	
+	    <!-- 427BFF	5575BF	1541A6	719CFF	97B6FF
+Complementary Color:
+				
+FFB92C	BF9848	A6730E	FFCA60	FFD88B -->
+	    
+</resources>

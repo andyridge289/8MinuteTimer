@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory
+    	android:title="Sounds">
+    	<ListPreference
+    	    android:key="sound"
+            android:title="Select notification sound"
+            android:entries="@array/sounds"
+            android:entryValues="@array/sound_values"
+            android:dialogTitle="Sounds">
+         </ListPreference>    
+    </PreferenceCategory>
+    <PreferenceCategory
+            android:title="Screen Timeouts">
+        <CheckBoxPreference
+                android:key="keep_awake"
+                android:title="Keep screen awake"
+                android:summary="Keep the screen awake when using the app.">
+        </CheckBoxPreference>
+    </PreferenceCategory>
+</PreferenceScreen>

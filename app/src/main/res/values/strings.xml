@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">8 Minutes</string>
+    <string name="about">The 8 minute exercise videos are available on Youtube at the following links:</string>
+    <string name="sound">sound</string>
+    <string name="keep_awake">keep_awake</string>
+    <string name="read_aloud">read_aloud</string>
+    <string name="locale">locale</string>
+    <string name="abs">8 Minute Abs</string>
+    <string name="arms">8 Minute Arms</string>
+    <string name="legs">8 Minute Legs</string>
+    <string name="buns">8 Minute Buns</string>
+    <string name="title_activity_home">Home</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_example">Example action</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>
