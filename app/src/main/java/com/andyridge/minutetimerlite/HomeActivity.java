@@ -1,0 +1,223 @@
+package com.andyridge.minutetimerlite;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.os.Bundle;
+import android.os.PowerManager;
+import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.WindowManager;
+
+import com.andyridge.minutetimerlite.lib.Constants;
+
+import java.util.HashMap;
+
+import static com.andyridge.minutetimerlite.lib.Constants.LOCALES;
+import static com.andyridge.minutetimerlite.lib.Constants.TAG;
+
+
+//TODO Make it so that they can change the audio stream that it outputs to
+//TODO Add instructions to say what the exercise in
+//TODO Add disclaimer if people do damage to themselves
+//TODO Add link to the exercise videos in the countdown screen
+//TODO Add facility to skip to next exercise
+//TODO Make it so that it reads out the name of the exercise on resume after pausing
+// After waiting a few seconds
+//TODO Add a reminder to make them do the exercise at a certain time every day
+//TODO Add the option to start the exercise half way through
+//TODO Implement some statistics
+
+public class HomeActivity extends ActionBarActivity
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TextToSpeech.OnInitListener {
+
+    public static final String PAGE = "page";
+    public static final String EXERCISE_DATA = "exercise_data";
+
+    private NavigationDrawerFragment mNavigationDrawerFragment;
+
+    public static TextToSpeech tts;
+    private static HashMap<String, String> alarmStream;
+
+    private CharSequence mTitle;
+
+    private NavigationDrawerFragment.Page page;
+    private Fragment[] fragments;
+
+    private int[][] data;
+
+    private SharedPreferences sharedPreferences;
+    public static int sound = 0;
+    public static boolean readAloud = false;
+    public static int locale = 0;
+//    public static boolean keepAwake = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        fragments = new Fragment[NavigationDrawerFragment.Page.values().length];
+
+        data = new int[NavigationDrawerFragment.Page.values().length][4];
+        for (int i = 0; i < NavigationDrawerFragment.Page.values().length; i++) {
+            data[i] = null;
+        }
+
+        setContentView(R.layout.activity_home);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Sort out the preferences
+        sound = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.sound), "0"));
+        readAloud = sharedPreferences.getBoolean(this.getString(R.string.read_aloud), false);
+        locale = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.locale), "0"));
+
+//        setLock(sharedPreferences.getBoolean(this.getString(R.string.keep_awake), false));
+
+        tts = new TextToSpeech(this, this);
+
+
+        alarmStream = new HashMap<String, String>();
+        alarmStream.put(TextToSpeech.Engine.KEY_PARAM_STREAM,
+                String.valueOf(AudioManager.STREAM_ALARM));
+
+        setVolumeControlStream(AudioManager.STREAM_ALARM);
+
+        mNavigationDrawerFragment = (NavigationDrawerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mTitle = getTitle();
+
+        // Set up the drawer.
+        mNavigationDrawerFragment.setUp(
+                R.id.navigation_drawer,
+                (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        if(savedInstanceState != null) {
+            page = NavigationDrawerFragment.Page.values()[savedInstanceState.getInt(PAGE)];
+            data[page.index] = savedInstanceState.getIntArray(EXERCISE_DATA);
+            onNavigationDrawerItemSelected(page.index);
+        }
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(PAGE, page.index);
+        if(page.index < NavigationDrawerFragment.Page.SETTINGS.index) {
+            outState.putIntArray(EXERCISE_DATA, ((TimerFragment) fragments[page.index]).getData());
+        }
+    }
+
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+        // update the main content by replacing fragments
+
+        if(position < NavigationDrawerFragment.Page.SETTINGS.index) {
+            fragments[position] = TimerFragment.newInstance(Constants.Exercise.values()[position], data[position]);
+        } else if(position == NavigationDrawerFragment.Page.SETTINGS.index) {
+            fragments[position] = SettingsFragment.newInstance();
+        } else {
+            fragments[position] = AboutFragment.newInstance();
+        }
+
+        page = NavigationDrawerFragment.Page.values()[position];
+        Fragment active = fragments[position];
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, active)
+                .commit();
+    }
+
+    public void setTitle(CharSequence newTitle) {
+        super.setTitle(newTitle);
+        mTitle = newTitle;
+        restoreActionBar();
+    }
+
+    public void restoreActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setTitle(mTitle);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (!mNavigationDrawerFragment.isDrawerOpen()) {
+            restoreActionBar();
+            return true;
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
+    }
+
+    public void onDestroy() {
+
+        //Close the Text to Speech Library
+        if(tts != null) {
+
+            tts.stop();
+            tts.shutdown();
+            Log.d(TAG, "TTS Destroyed");
+        }
+
+        super.onDestroy();
+    }
+
+    public void onBackPressed() {
+        if(page.index < NavigationDrawerFragment.Page.SETTINGS.index) {
+            ((TimerFragment) fragments[page.index]).backPressed();
+        } else {
+            // Go back to the abs page. we're either on settings or about
+            onNavigationDrawerItemSelected(NavigationDrawerFragment.Page.ABS.index);
+        }
+    }
+
+    public static void resetLocale() {
+        if(tts != null)
+            tts.setLanguage(LOCALES[locale]);
+    }
+
+
+    public void onInit(int status) {
+        tts.setLanguage(LOCALES[locale]);
+    }
+
+    public static void speak(String word) {
+        tts.speak(word, TextToSpeech.QUEUE_ADD, alarmStream);
+    }
+
+
+    public void startTimer() {
+        // Get the wake lock if we need to keep the screen awake.
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    public void stopTimer() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+
+    // Make sure we surrender the wake lock when this activity is closed.
+    @Override public void onStop() {
+        super.onStop();
+    }
+}

@@ -1,126 +1,49 @@
 package com.andyridge.minutetimerlite;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Configuration;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TableRow;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andyridge.minutetimerlite.lib.Archive;
-import com.andyridge.minutetimerlite.lib.Constants;
-
-import java.util.HashMap;
-
-import static com.andyridge.minutetimerlite.lib.Constants.*;
+import static com.andyridge.minutetimerlite.lib.Constants.Exercise;
+import static com.andyridge.minutetimerlite.lib.Constants.PAUSED;
+import static com.andyridge.minutetimerlite.lib.Constants.RUNNING;
+import static com.andyridge.minutetimerlite.lib.Constants.STOPPED;
 
 public class TimerFragment extends Fragment {
+
     private static final String EXERCISE = "exercise";
+    private static final String EXERCISE_INDEX = "exercise_index";
+    private static final String STATE = "state";
+    private static final String TIME = "time";
 
     private TextView nameText;
     private TextView nextText;
 
-    private Button startButton;
-    private Button stopButton;
-    private Button pauseButton;
-    private Button backButton;
-
-    private TableRow startRow;
-    private TableRow stopRow;
+    private ImageButton startButton;
+    private ImageView pauseButton;
+    private ImageView stopButton;
 
     private PieView pie;
 
-    private int state = STOPPED;
-
-    private ToneGenerator t = new ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME);
+    private static int state = STOPPED;
 
     private Exercise exercise;
 
     private int index = 0;
-    private int pauseTime = 0;
     private int currentTime = 0;
 
     private Handler handler = new Handler();
-    private long startTime = -1;
-
-    public static PowerManager.WakeLock wakeLock;
-
-    private final Runnable countdownTask = new Runnable()
-    {
-        @Override
-        public void run()
-        {
-            if(state > RUNNING)
-            {
-                // If we are either stopped or paused then we shouldn't tick.
-                // we should also surrender the sleep lock
-                return;
-            }
-
-            // Work out how many seconds have elapsed since the timer started
-            final long start = startTime;
-            long millis = System.currentTimeMillis() - start;
-
-            int seconds = (int) (millis / 1000);
-            seconds += pauseTime;
-
-            // Work out what to set the text to, and whether to stop
-            if(seconds < exercise.timings[index])
-            {
-                currentTime = exercise.timings[index] - seconds;
-                //countdownText.setText("" + currentTime);
-                pie.goToIndex(seconds, exercise.timings[index], true);
-
-                handler.postDelayed(this, 1000);
-
-                if(seconds == exercise.timings[index] - 1 && index < exercise.timings.length - 1 && MinuteMenu.readAloud)
-                {
-                    ((Home) getActivity()).speak(exercise.names[index + 1]);
-                }
-            }
-            else
-            {
-
-                if(index < exercise.timings.length - 1)
-                {
-                    // Create a new timer for the next exercise.
-                    pauseTime = 0;
-                    index++;
-
-                    if(!MinuteMenu.readAloud)
-                    {
-                        t.startTone(TONES[MinuteMenu.sound], 1000);
-                    }
-
-                    startTimer(index);
-                }
-                else
-                {
-                    // Beep
-                    t.startTone(TONES[MinuteMenu.sound], 1000);
-                    Archive.saveMessage(exercise.index, Constants.Progress.COMPLETED.ordinal(), System.currentTimeMillis());
-                    // We are done.
-                    doneAlert();
-                }
-
-
-            }
-        }
-
-    };
+    private Timer countdownTask;
 
     /**
      * Use this factory method to create a new instance of
@@ -128,59 +51,69 @@ public class TimerFragment extends Fragment {
      *
      * @return A new instance of fragment TimerFragment.
      */
-    public static TimerFragment newInstance(Exercise exercise) {
+    public static TimerFragment newInstance(Exercise exercise, int[] data) {
         TimerFragment fragment = new TimerFragment();
         Bundle args = new Bundle();
         args.putInt(EXERCISE, exercise.index);
+
+        if(data != null) {
+            args.putInt(EXERCISE_INDEX, data[1]);
+            args.putInt(STATE, data[2]);
+            args.putInt(TIME, data[3]);
+        }
+
         fragment.setArguments(args);
         return fragment;
     }
+
     public TimerFragment() {
         // Required empty public constructor
     }
 
+    /**
+     * Find out what exercise we're running.
+     *
+     * @param savedInstanceState The instance state to restore from
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             exercise = Exercise.values()[getArguments().getInt(EXERCISE)];
+            index = getArguments().getInt(EXERCISE_INDEX);
+            state = getArguments().getInt(STATE, STOPPED);
+            currentTime = getArguments().getInt(TIME, 0);
         }
     }
 
+    /**
+     * Initialise everything and sort the wake lock out
+     *
+     * @param inflater the layout inflater
+     * @param container the container into which we are being put
+     * @param savedInstanceState The instance state to load
+     * @return The inflated fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.timer, container, false);
+        View v = inflater.inflate(R.layout.fragment_timer, container, false);
 
-        startButton = (Button) v.findViewById(R.id.startButton);
+        startButton = (ImageButton) v.findViewById(R.id.start_button);
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View vv) {
-                if(state == PAUSED)
+                if(state == PAUSED) {
                     resume();
-                else
+                } else if(state == STOPPED) {
                     start();
+                }
             }
         });
 
-        stopButton = (Button) v.findViewById(R.id.stopButton);
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View vv) {
-                stop();
-            }
-        });
-
-        backButton = (Button) v.findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View vv) {
-                stop();
-            }
-        });
-
-        pauseButton = (Button) v.findViewById(R.id.pauseButton);
+        pauseButton = (ImageView) v.findViewById(R.id.pause_button);
         pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View vv) {
@@ -188,10 +121,16 @@ public class TimerFragment extends Fragment {
             }
         });
 
-        startRow = (TableRow) v.findViewById(R.id.startRow);
-        stopRow = (TableRow) v.findViewById(R.id.stopRow);
+        stopButton = (ImageView) v.findViewById(R.id.stop_button);
+        stopButton.setEnabled(false);
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View vv) {
+                stop();
+            }
+        });
 
-        nameText = (TextView) v.findViewById(R.id.name);
+        nameText = (TextView) v.findViewById(R.id.exercise_name);
         nextText = (TextView) v.findViewById(R.id.nextText);
 
         pie = (PieView) v.findViewById(R.id.pieview);
@@ -201,114 +140,142 @@ public class TimerFragment extends Fragment {
         nextText.setText(exercise.names[1]);
         getActivity().setTitle(exercise.name);
 
-        wakeLock = ((PowerManager) getActivity().getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Tag");
-
-        // Get the wake lock if we need to keep the screen awake.
-        if(MinuteMenu.keepAwake) {
-            if(wakeLock != null && !wakeLock.isHeld())
-            {
-                wakeLock.acquire();
-            }
+        if(index < exercise.timings.length - 1) {
+            nextText.setText(exercise.names[1]);
+        } else {
+            nextText.setText("None");
         }
+
+        nameText.setText(exercise.names[index]);
+        getActivity().setTitle(exercise.name);
+
+        switch(state) {
+            case RUNNING:
+                pie.goToIndex(currentTime, exercise.timings[index], true);
+                stopButton.setEnabled(true);
+                startButton.setVisibility(View.GONE);
+                pauseButton.setVisibility(View.VISIBLE);
+                break;
+            case PAUSED:
+                pie.goToIndex(currentTime, exercise.timings[index], true);
+                stopButton.setEnabled(true);
+                startButton.setVisibility(View.VISIBLE);
+                pauseButton.setVisibility(View.GONE);
+                break;
+            case STOPPED:
+                pie.goToStart(exercise.timings[index], true);
+                stopButton.setEnabled(false);
+                startButton.setVisibility(View.VISIBLE);
+                pauseButton.setVisibility(View.GONE);
+                break;
+        }
+
+        // Get the thread that is doing the counting down
+        countdownTask = Timer.getInstance(exercise, index, currentTime, this, false);
+        handler.post(countdownTask);
+
+//        if(countdownTask.stopped()) {
+//            countdownTask.unStop();
+//            handler.post(countdownTask);
+//        }
+
 
         return v;
     }
 
+    public void setPie(int time, int total, boolean invalidate) {
+        pie.goToIndex(time, total, invalidate);
+    }
+
     /**
-     * Starts the timer.
+     * Starts the fragment_timer.
      */
-    private void start()
-    {
-        pauseTime = 0;
+    private void start() {
         pie.goToStart(exercise.timings[0], true);
 
-        if(index < exercise.timings.length - 1)
-        {
+        if(index < exercise.timings.length - 1) {
             nextText.setText(exercise.names[index + 1]);
-        }
-        else
-        {
+        } else {
             nextText.setText("None");
         }
 
         nameText.setText(exercise.names[index]);
 
-        if(state != PAUSED && MinuteMenu.readAloud)
-            ((Home) getActivity()).speak(exercise.names[index]);
-
         state = RUNNING;
-        startRow.setVisibility(View.GONE);
-        stopRow.setVisibility(View.VISIBLE);
 
-        Archive.saveMessage(exercise.index, Constants.Progress.STARTED.ordinal(), System.currentTimeMillis());
-        startTimer(0);
+        stopButton.setEnabled(true);
+        startButton.setVisibility(View.GONE);
+        pauseButton.setVisibility(View.VISIBLE);
+
+        ((HomeActivity) getActivity()).startTimer();
+        startTimer(0, true);
     }
-
-    private void resume()
-    {
-        startRow.setVisibility(View.GONE);
-        stopRow.setVisibility(View.VISIBLE);
-
-        startTimer(0);
-    }
-
 
     /**
-     * Stops & resets the timer.
+     * Resume the fragment_timer
      */
-    private void stop()
-    {
-        startRow.setVisibility(View.VISIBLE);
-        stopRow.setVisibility(View.GONE);
-//		countdownText.setText("" + timings[0]);
+    private void resume() {
+        startButton.setVisibility(View.VISIBLE);
+        pauseButton.setVisibility(View.GONE);
+        stopButton.setEnabled(true);
+        ((HomeActivity) getActivity()).startTimer();
+        startTimer(index, false);
+    }
+
+    /**
+     * Stops & resets the fragment_timer.
+     */
+    private void stop() {
+        startButton.setVisibility(View.VISIBLE);
+        pauseButton.setVisibility(View.GONE);
+        stopButton.setEnabled(false);
+        currentTime = 0;
+        index = 0;
+        countdownTask = Timer.getInstance(exercise, index, currentTime, this, true);
+
         pie.goToStart(exercise.timings[0], true);
         nameText.setText(exercise.names[0]);
-        if(index < exercise.timings.length - 1)
-        {
+        if(index < exercise.timings.length - 1) {
             nextText.setText(exercise.names[index + 1]);
-        }
-        else
-        {
+        } else {
             nextText.setText("None");
         }
 
+        ((HomeActivity) getActivity()).stopTimer();
         state = STOPPED;
     }
 
-
     /**
-     * Pauses the timer
+     * Pauses the fragment_timer
      */
-    private void pause()
-    {
-        pauseTime = exercise.timings[index] - pie.getCurrentTime(); //Integer.parseInt((String) countdownText.getText());
-
-        startRow.setVisibility(View.VISIBLE);
-        stopRow.setVisibility(View.GONE);
-
+    private void pause() {
         state = PAUSED;
-        startButton.setText("Resume");
+        startButton.setVisibility(View.VISIBLE);
+        pauseButton.setVisibility(View.GONE);
+        ((HomeActivity) getActivity()).stopTimer();
     }
 
+    public void onResume() {
+        super.onResume();
+        countdownTask = Timer.getInstance(this.exercise, this.index, this.currentTime, this, false);
+    }
 
     /**
-     * We need to make sure the timer doesn't carry on ticking when they press back. Also
+     * We need to make sure the fragment_timer doesn't carry on ticking when they press back. Also
      * close the activity
      */
-
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
     }
 
 
     /**
-     * Start the timer indicated by the index.
+     * Start the fragment_timer indicated by the index.
      *
-     * @param i The index of the timer to start
+     * @param i The index of the fragment_timer to start
      */
-    private void startTimer(final int i)
+    void startTimer(final int i, boolean restart)
     {
         index = i;
 
@@ -318,7 +285,6 @@ public class TimerFragment extends Fragment {
         }
         else
         {
-            //countdownText.setText("" + timings[index]);
             pie.goToStart(exercise.timings[index], true);
             nameText.setText(exercise.names[index]);
         }
@@ -332,164 +298,56 @@ public class TimerFragment extends Fragment {
             nextText.setText("None");
         }
 
-        startTime = System.currentTimeMillis();
+        if(restart)
+            currentTime = 0;
+
         handler.removeCallbacks(countdownTask);
         handler.postDelayed(countdownTask, 1000);
     }
 
-    // Make sure we surrender the wake lock when this activity is closed.
-    @Override public void onStop()
-    {
-        super.onStop();
-
-        // May as well just check this, we always want to surrender the lock.
-        if(wakeLock != null && wakeLock.isHeld())
-        {
-            wakeLock.release();
-        }
-    }
-
-    // Show the alert to say that we've finished.
-    private void doneAlert()
-    {
-        // Show a dialog to say everything has finished.
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-        dialogBuilder.setMessage("Done. Return to main menu?");
-
-        // Goes back to the main menu, apparently quitting is BAAAAAAAD.
-        dialogBuilder.setPositiveButton("Main Menu", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-//                getActivity().finish();
-            }
-        });
-        dialogBuilder.setNegativeButton("Stay Here", null);
-
-        // Reset the page.
-        startRow.setVisibility(View.VISIBLE);
-        stopRow.setVisibility(View.GONE);
+    /**
+     *
+     */
+    void done()   {
         pie.goToStart(exercise.timings[0], true);
         nameText.setText(exercise.names[0]);
         nextText.setText(exercise.names[1]);
 
-        // Show the alert dialog - or should that be dialogue?
-        AlertDialog alert = dialogBuilder.create();
-        alert.setTitle("Done");
-        alert.show();
+        startButton.setVisibility(View.VISIBLE);
+        pauseButton.setVisibility(View.GONE);
+        stopButton.setEnabled(false);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     /**
      * Called when the orientation of the application changes.
      */
     @Override
-    public void onConfigurationChanged(Configuration config)
-    {
+    public void onConfigurationChanged(Configuration config) {
         super.onConfigurationChanged(config);
-
-//        setContentView(R.layout.timer);
-
-        /*switch(resolution)
-        {
-        case QVGA:
-    		setContentView(R.layout.timerqvga);
-        	break;
-
-        case HVGA:
-    		setContentView(R.layout.timerhvga);
-        	break;
-
-        default:
-    		setContentView(R.layout.timerwvga);
-        	break;
-        }*/
-
-//        startButton = (Button) findViewById(R.id.startButton);
-//        startButton.setOnClickListener(this);
-//
-//        stopButton = (Button) findViewById(R.id.stopButton);
-//        stopButton.setOnClickListener(this);
-//
-//        backButton = (Button) findViewById(R.id.backButton);
-//        backButton.setOnClickListener(this);
-//
-//        pauseButton = (Button) findViewById(R.id.pauseButton);
-//        pauseButton.setOnClickListener(this);
-//
-//        startRow = (TableRow) findViewById(R.id.startRow);
-//        stopRow = (TableRow) findViewById(R.id.stopRow);
-//
-//        //countdownText = (TextView) findViewById(R.id.countdown);
-//        nameText = (TextView) findViewById(R.id.name);
-//        nextText = (TextView) findViewById(R.id.nextText);
-//
-//        if(index < timings.length - 1)
-//            nextText.setText(names[1]);
-//        else
-//            nextText.setText("None");
-//        nameText.setText(names[index]);
-//        this.setTitle(name);
-//
-//        switch(state)
-//        {
-//            case RUNNING:
-////        	countdownText.setText("" + currentTime);
-//                pie.goToIndex(currentTime, timings[index], true);
-//                startRow.setVisibility(View.GONE);
-//                stopRow.setVisibility(View.VISIBLE);
-//                break;
-//            case PAUSED:
-////        	countdownText.setText("" + (timings[index] - pauseTime));
-//                startButton.setText("Resume");
-//                break;
-//            case STOPPED:
-////        	countdownText.setText("" + timings[index]);
-//                pie.goToStart(timings[index], true);
-//                break;
-//        }
     }
 
     public void backPressed() {
-        if(wakeLock.isHeld())
-        {
-            wakeLock.release();
-        }
-
         state = STOPPED;
     }
 
-//	private void animateProgressMeter()
-//	  {
-//	    this.animationThread = new Thread()
-//	    {
-//	      public boolean minRecordingLengthReached = false;
-//
-//	      public void run()
-//	      {
-//	        while(state == RUNNING)
-//	          try
-//	          {
-//
-//	            MinuteTimer.this.handler.post(MinuteTimer.this.updateProgressMeter);
-//	            if (l1 >= timings[index])
-//	            {
-//	            	MinuteTimer.this.recordingProgressView.sweepAngle = 0;
-//
-//	            }
-//	            else
-//	            {
-////	              if ((!this.minRecordingLengthReached) && (l1 > MinuteTimer.this.min_recording_time))
-////	            	  MinuteTimer.this.onMinRecordingLengthReached();
-//	              Thread.sleep(100L);
-//	            }
-//	          }
-//	          catch (InterruptedException localInterruptedException)
-//	          {
-//	          }
-//	      }
-//	    };
-//	    this.animationThread.start();
-//	  }
+    public int[] getData() {
+        return new int[]{ exercise.index, index, state, currentTime };
+    }
 
+    public int getState() {
+        return state;
+    }
+
+    public PieView getPie() {
+        return pie;
+    }
+
+    public Handler getHandler() {
+        return handler;
+    }
 }

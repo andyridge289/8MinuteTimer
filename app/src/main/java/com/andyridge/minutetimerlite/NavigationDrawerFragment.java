@@ -62,7 +62,8 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     private String[] pages = new String[] {
-        Page.ABS.name, Page.ARMS.name, Page.LEGS.name, Page.BUNS.name, Page.STRETCH.name, Page.SETTINGS.name
+        Page.ABS.name, Page.ARMS.name, Page.LEGS.name, Page.BUNS.name, Page.STRETCH.name,
+        Page.SETTINGS.name, Page.ABOUT.name
     };
 
     public enum Page {
@@ -71,7 +72,8 @@ public class NavigationDrawerFragment extends Fragment {
         LEGS(2, "8 Minute Legs"),
         BUNS(3, "8 Minute Buns"),
         STRETCH(4, "8 Minute Stretch"),
-        SETTINGS(5, "Settings");
+        SETTINGS(5, "Settings"),
+        ABOUT(6, "About");
 
         public int index;
         public String name;

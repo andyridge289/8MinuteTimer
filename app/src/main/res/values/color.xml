@@ -5,7 +5,6 @@
 	<color name="black">#FF000000</color>
 	
 	<color name="background">#FFFFFF</color>
-	<color name="background_light">#EEF</color>
 	<color name="background_dark">#DDF</color>
 	<color name="background_darker">#ABABCD</color>
 	

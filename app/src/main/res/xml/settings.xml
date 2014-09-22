@@ -8,15 +8,23 @@
             android:title="Select notification sound"
             android:entries="@array/sounds"
             android:entryValues="@array/sound_values"
-            android:dialogTitle="Sounds">
-         </ListPreference>    
+            android:dialogTitle="Sounds"
+            />
     </PreferenceCategory>
     <PreferenceCategory
-            android:title="Screen Timeouts">
+        android:title="Text-to-speech">
         <CheckBoxPreference
-                android:key="keep_awake"
-                android:title="Keep screen awake"
-                android:summary="Keep the screen awake when using the app.">
-        </CheckBoxPreference>
+            android:key="@string/read_aloud"
+            android:title="Read exercise names out loud"
+            android:summary="Read the name of the next exercise out loud so you don't have to look at the screen"
+            />
     </PreferenceCategory>
+    <!--<PreferenceCategory-->
+            <!--android:title="Screen Timeout">-->
+        <!--<CheckBoxPreference-->
+                <!--android:key="@string/keep_awake"-->
+                <!--android:title="Keep screen awake"-->
+                <!--android:summary="Keep the screen awake when using the app."-->
+                <!--/>-->
+    <!--</PreferenceCategory>-->
 </PreferenceScreen>
