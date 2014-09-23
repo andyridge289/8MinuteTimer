@@ -68,6 +68,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                         case TextToSpeech.LANG_COUNTRY_AVAILABLE:
                         case TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE:
                             Log.d(TAG, "TTS available");
+                            HomeActivity.readAloud = true;
                             break;
 
                         case TextToSpeech.LANG_MISSING_DATA:
@@ -105,6 +106,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                         Intent ttsInstall = new Intent();
                         ttsInstall.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
                         startActivity(ttsInstall);
+                        HomeActivity.readAloud = true;
                         break;
 
                     case DialogInterface.BUTTON_NEGATIVE:

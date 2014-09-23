@@ -305,10 +305,7 @@ public class TimerFragment extends Fragment {
         pie.goToStart(exercise.timings[0]);
         nameText.setText(exercise.names[0]);
         nextText.setText(exercise.names[1]);
-
-        startButton.setVisibility(View.VISIBLE);
-        pauseButton.setVisibility(View.GONE);
-        stopButton.setEnabled(false);
+        stop();
     }
 
     public void backPressed() {

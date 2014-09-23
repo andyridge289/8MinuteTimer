@@ -92,7 +92,7 @@ public class Timer implements Runnable {
             tf.setPie(currentTime, exercise.timings[index], index);
 
             if(currentTime == 0 && HomeActivity.readAloud) {
-                HomeActivity.speak(exercise.names[index]);
+                HomeActivity.speak(tf.getActivity(), exercise.names[index]);
             }
 
             currentTime++;

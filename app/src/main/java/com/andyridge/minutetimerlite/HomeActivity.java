@@ -1,5 +1,6 @@
 package com.andyridge.minutetimerlite;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.andyridge.minutetimerlite.lib.Constants;
 
@@ -207,8 +209,14 @@ public class HomeActivity extends ActionBarActivity
         tts.setLanguage(LOCALES[locale]);
     }
 
-    public static void speak(String word) {
-        tts.speak(word, TextToSpeech.QUEUE_ADD, alarmStream);
+    public static void speak(Context context, String word) {
+        try {
+            tts.speak(word, TextToSpeech.QUEUE_ADD, alarmStream);
+        } catch (Exception e) {
+            Log.d(TAG, "TTS Speaking fail");
+            Toast.makeText(context, "Failed to say \"" + word + "\". Try manually installing the text to speech app!",
+                            Toast.LENGTH_LONG).show();
+        }
     }
 
 
