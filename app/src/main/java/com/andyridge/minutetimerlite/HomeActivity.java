@@ -117,7 +117,7 @@ public class HomeActivity extends ActionBarActivity
         // update the main content by replacing fragments
 
         // Lots of things could be null in this set of steps, so check them all
-        if(page != null) {
+        if(page != null && page.index < NavigationDrawerFragment.Page.SETTINGS.index) {
             TimerFragment tf = (TimerFragment) fragments[page.index];
             if (tf != null) {
                 int[] fragmentData = tf.getData();
@@ -181,11 +181,17 @@ public class HomeActivity extends ActionBarActivity
     }
 
     public void onBackPressed() {
-        if(page.index < NavigationDrawerFragment.Page.SETTINGS.index) {
-            ((TimerFragment) fragments[page.index]).backPressed();
-        } else {
-            // Go back to the abs page. we're either on settings or about
+        if (page.index > NavigationDrawerFragment.Page.ABS.index) {
+            if(page.index < NavigationDrawerFragment.Page.SETTINGS.index) {
+                // If we are looking at a timer, we need to make it stop the running timer
+                ((TimerFragment) fragments[page.index]).backPressed();
+            }
+
+            // Go back to the abs page, which is basically the home page
             onNavigationDrawerItemSelected(NavigationDrawerFragment.Page.ABS.index);
+        } else {
+            // We're on the abs page, this so we can leave
+            super.onBackPressed();
         }
     }
 
