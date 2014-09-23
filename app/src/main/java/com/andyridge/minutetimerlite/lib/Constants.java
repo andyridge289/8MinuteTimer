@@ -59,7 +59,6 @@ public abstract class Constants
 	public static final int[] TIMING_LEGS = { 30, 30, 30,
 		   30, 30, 30,
 		   30, 30, 30,
-		   30, 30, 30,
 		   30, 30, 
 		   30, 30,
 		   30,
@@ -70,7 +69,7 @@ public abstract class Constants
 			"Outer Thigh Raise w/ Squat Left", "Outer Thigh Raise w/ Squat Right",
 			"Front/Back Lunge Left", "Front/Back Lunge Right",
 			"Bent Leg Inner Thigh Raise Left",
-			"Bent Leg Inner Thigh Raise Left", "Plie w/ Calf Raise"};
+			"Bent Leg Inner Thigh Raise Right", "Plie w/ Calf Raise"};
 
 	public static final int[] TIMING_BUNS = 
 	{ 
