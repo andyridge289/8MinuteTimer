@@ -18,5 +18,12 @@
             android:title="Read exercise names out loud"
             android:summary="Read the name of the next exercise out loud so you don't have to look at the screen"
             />
+        <ListPreference
+            android:key="@string/locale"
+            android:title="Choose read aloud language"
+            android:entries="@array/locales"
+            android:entryValues="@array/locale_values"
+            android:dialogTitle="Locale"
+            />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -7,10 +7,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.andyridge.minutetimerlite.preferencesupport.PreferenceFragment;
 
 import static com.andyridge.minutetimerlite.lib.Constants.LOCALES;
+import static com.andyridge.minutetimerlite.lib.Constants.TAG;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener
 {
@@ -39,7 +42,12 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
         addPreferencesFromResource(R.xml.settings);
 
-        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        prefs.registerOnSharedPreferenceChangeListener(this);
+
+        if (!prefs.getBoolean(getString(R.string.read_aloud),false)) {
+            findPreference(getString(R.string.locale)).setEnabled(false);
+        }
     }
 
     @Override
@@ -50,12 +58,34 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             if (key.equals(getString(R.string.sound)))
                 HomeActivity.sound = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.sound), "0"));
             else if (key.equals(getString(R.string.read_aloud))) {
-                HomeActivity.readAloud = sharedPreferences.getBoolean(this.getString(R.string.read_aloud), false);
-                if (HomeActivity.readAloud) {
-                    if (HomeActivity.tts.isLanguageAvailable(LOCALES[HomeActivity.locale]) != TextToSpeech.LANG_AVAILABLE) {
-                        readAloudDialog();
+
+                // See what state it's in. If it's positive, do a check to see if the thing is available
+                boolean readAloud = sharedPreferences.getBoolean(this.getString(R.string.read_aloud), false);
+                if(readAloud) {
+                    int availability = HomeActivity.tts.isLanguageAvailable(LOCALES[HomeActivity.locale]);
+                    switch (availability) {
+                        case TextToSpeech.LANG_AVAILABLE:
+                        case TextToSpeech.LANG_COUNTRY_AVAILABLE:
+                        case TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE:
+                            Log.d(TAG, "TTS available");
+                            break;
+
+                        case TextToSpeech.LANG_MISSING_DATA:
+                            readAloudDialog();
+                            break;
+
+                        case TextToSpeech.LANG_NOT_SUPPORTED:
+                            Toast.makeText(getActivity(), "The language isn't supported by TTS.", Toast.LENGTH_LONG).show();
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putBoolean(getString(R.string.read_aloud), false); // Does this change the preference tick box?
+                            editor.commit();
+                            break;
                     }
+                    findPreference(getString(R.string.locale)).setEnabled(true);
+                } else {
+                    findPreference(getString(R.string.locale)).setEnabled(false);
                 }
+
             } else if (key.equals(getString(R.string.locale))) {
                 HomeActivity.locale = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.locale), "0"));
                 HomeActivity.resetLocale();
@@ -79,7 +109,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
                     case DialogInterface.BUTTON_NEGATIVE:
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean(getString(R.string.read_aloud), false);
+                        editor.putBoolean(getString(R.string.read_aloud), false); // Does this change the preference tick box?
                         editor.commit();
                         break;
                 }
@@ -87,7 +117,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("The Text To Speech (TTS) library is required to read out exercises. Install now?")
+        builder.setMessage("The Text To Speech (TTS) library is required to read out exercise names. Install now?")
                 .setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener)
                 .show();
