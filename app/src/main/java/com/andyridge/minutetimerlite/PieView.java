@@ -29,9 +29,15 @@ public class PieView extends View
     private int textSize;
 	
 	private ShapeDrawable pie;
+    private ShapeDrawable midPie;
+    private ShapeDrawable midPie2;
     private ShapeDrawable innerPie;
+
     private ArcShape arc;
+    private ArcShape midArc;
+    private ArcShape midArc2;
     private ArcShape innerArc;
+
     private Paint textPaint;
 	
 	public PieView(Context context) 
@@ -52,15 +58,23 @@ public class PieView extends View
         this.state = STATE_STOPPED;
 
         arc = new ArcShape(START, this.currentAngle);
+        midArc = new ArcShape(START, this.currentAngle);
+        midArc2 = new ArcShape(START, this.currentAngle);
         innerArc = new ArcShape(START, this.currentAngle);
 
         textPaint = new Paint();
 
 		pie = new ShapeDrawable(arc);
-		pie.getPaint().setColor(Color.rgb(131, 168, 255));
+		pie.getPaint().setColor(getResources().getColor(R.color.gold_light));
+
+        midPie = new ShapeDrawable(midArc);
+        midPie.getPaint().setColor(getResources().getColor(R.color.gold_xlight));
+
+        midPie2 = new ShapeDrawable(midArc2);
+        midPie2.getPaint().setColor(getResources().getColor(R.color.gold_xxlight));
 
         innerPie = new ShapeDrawable(innerArc);
-        innerPie.getPaint().setColor(Color.rgb(243, 243, 243));
+        innerPie.getPaint().setColor(getResources().getColor(R.color.holo_light_bg));
 
         invalidate();
         requestLayout();
@@ -108,9 +122,11 @@ public class PieView extends View
     {
         super.onDraw(canvas);
 
-        arc = new ArcShape(currentAngle + START, END - currentAngle);
-
-    	pie.setShape(arc);
+        textPaint.setStyle(Paint.Style.FILL);
+        textPaint.setAntiAlias(true);
+        textPaint.setTextSize(textSize);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setColor(getResources().getColor(R.color.grey_mid));
 
         int xCentre = viewWidth / 2;
         int yCentre = viewHeight / 2;
@@ -119,18 +135,28 @@ public class PieView extends View
         int bottom = yCentre + size / 2;
         int left = xCentre - size / 2;
         int right = xCentre + size / 2;
-    	
+
+        arc = new ArcShape(currentAngle + START, END - currentAngle);
+        pie.setShape(arc);
     	pie.setBounds(left, top, right, bottom);
     	pie.draw(canvas);
 
-        innerPie.setBounds(left + size / 16, top + size / 16, right - size / 16, bottom - size / 16);
-        innerPie.draw(canvas);
+        final int W = 25;
+        final int W2 = 40;
+        final int W3 = 28;
 
-    	textPaint.setStyle(Paint.Style.FILL);
-    	textPaint.setAntiAlias(true);
-    	textPaint.setTextSize(textSize);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        textPaint.setColor(Color.rgb(21, 65, 166));
+        midArc = new ArcShape(currentAngle + START, END - currentAngle);
+        midPie.setShape(midArc);
+        midPie.setBounds(left + size / W2, top + size / W2, right - size / W2, bottom - size / W2);
+        midPie.draw(canvas);
+
+        midArc2 = new ArcShape(currentAngle + START, END - currentAngle);
+        midPie2.setShape(midArc2);
+        midPie2.setBounds(left + size / W3, top + size / W3, right - size / W3, bottom - size / W3);
+        midPie2.draw(canvas);
+
+        innerPie.setBounds(left + size / W, top + size / W, right - size / W, bottom - size / W);
+        innerPie.draw(canvas);
 
         float textHeight = textPaint.descent() - textPaint.ascent();
         float textOffset = (textHeight / 2) - textPaint.descent();

@@ -6,46 +6,17 @@
     android:layout_width="fill_parent"
     android:background="@color/actual_background"
     android:layout_height="fill_parent">
-    <TextView
-        android:id="@+id/exercise_name"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:gravity="center_horizontal"
-        android:textColor="@color/text"
-        android:layout_alignParentTop="true"
-        android:layout_marginBottom="1dip"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/next"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:paddingRight="5dip"
-        android:paddingEnd="5dip"
-        android:textColor="@color/text"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/next_text"
-        tools:ignore="RtlSymmetry" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/nextText"
-        android:textSize="20sp"
-        android:textColor="@color/lighter_text"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/next_text"
-        android:layout_toEndOf="@id/next_text"
-        />
     <LinearLayout
         android:id="@+id/button_container"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:orientation="vertical"
-        android:layout_above="@id/next_text"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="5dip"
+        android:layout_marginEnd="5dip"
         >
         <LinearLayout
             android:layout_width="wrap_content"
@@ -84,11 +55,52 @@
                 android:contentDescription="@string/stop_exercise" />
         </LinearLayout>
     </LinearLayout>
+    <TextView
+        android:id="@+id/exercise_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/text"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="1dip"
+        android:layout_toStartOf="@id/button_container"
+        android:layout_toLeftOf="@id/button_container"
+        />
+    <LinearLayout
+        android:id="@+id/next_container"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@id/button_container"
+        android:layout_toStartOf="@id/button_container"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dip"
+            android:text="@string/next"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingRight="5dip"
+            android:paddingEnd="5dip"
+            android:textColor="@color/text"
+            android:id="@+id/next_text"
+            tools:ignore="RtlSymmetry" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dip"
+            android:id="@+id/nextText"
+            android:textSize="20sp"
+            android:textColor="@color/lighter_text"
+            />
+    </LinearLayout>
     <com.andyridge.minutetimerlite.PieView
         android:id="@+id/pieview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_above="@id/next_text"
+        android:layout_above="@id/next_container"
         android:layout_toLeftOf="@id/button_container"
         android:layout_toStartOf="@id/button_container"
         android:layout_below="@id/exercise_name"

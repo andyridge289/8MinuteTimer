@@ -25,6 +25,7 @@
         android:textStyle="bold"
         android:paddingRight="5dip"
         android:paddingEnd="5dip"
+        android:layout_marginBottom="5dip"
         android:textColor="@color/text"
         android:layout_alignParentBottom="true"
         android:id="@+id/next_text"
@@ -32,6 +33,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="5dip"
         android:id="@+id/nextText"
         android:textSize="20sp"
         android:textColor="@color/lighter_text"

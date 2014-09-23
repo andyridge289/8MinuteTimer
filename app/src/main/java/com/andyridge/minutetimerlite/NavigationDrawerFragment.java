@@ -219,6 +219,12 @@ public class NavigationDrawerFragment extends Fragment {
         }
     }
 
+    public void close() {
+        if (mDrawerLayout != null) {
+            mDrawerLayout.closeDrawer(mFragmentContainerView);
+        }
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);

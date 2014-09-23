@@ -181,7 +181,9 @@ public class HomeActivity extends ActionBarActivity
     }
 
     public void onBackPressed() {
-        if (page.index > NavigationDrawerFragment.Page.ABS.index) {
+        if (mNavigationDrawerFragment.isDrawerOpen()) {
+            mNavigationDrawerFragment.close();
+        } else if (page.index > NavigationDrawerFragment.Page.ABS.index) {
             if(page.index < NavigationDrawerFragment.Page.SETTINGS.index) {
                 // If we are looking at a timer, we need to make it stop the running timer
                 ((TimerFragment) fragments[page.index]).backPressed();

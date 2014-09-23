@@ -4,9 +4,21 @@
 	<color name="background">#FFFFFF</color>
     <color name="actual_background">#F3F3F3</color>
 
-	<color name="text">#1541A6</color>
-	<color name="lighter_text">#427BFF</color>
-	
+	<color name="text">#333333</color>
+	<color name="lighter_text">#aa8000</color>
 
+    <color name="grey_dark">#000000</color>
+    <color name="grey_mid">#232323</color>
+    <color name="grey_light">#333333</color>
+
+    <color name="gold_dark">#826200</color>
+    <color name="gold_light">#aa8000</color>
+    <color name="gold_xlight">#cf9e00</color>
+    <color name="gold_xxlight">#ffc300</color>
+
+    <color name="yellow_dark">#ffd966</color>
+    <color name="yellow_light">#ffe79d</color>
+	
+    <color name="holo_light_bg">#f3f3f3</color>
 
 </resources>
