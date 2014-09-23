@@ -19,12 +19,4 @@
             android:summary="Read the name of the next exercise out loud so you don't have to look at the screen"
             />
     </PreferenceCategory>
-    <!--<PreferenceCategory-->
-            <!--android:title="Screen Timeout">-->
-        <!--<CheckBoxPreference-->
-                <!--android:key="@string/keep_awake"-->
-                <!--android:title="Keep screen awake"-->
-                <!--android:summary="Keep the screen awake when using the app."-->
-                <!--/>-->
-    <!--</PreferenceCategory>-->
 </PreferenceScreen>

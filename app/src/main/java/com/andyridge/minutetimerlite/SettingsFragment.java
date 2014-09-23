@@ -5,15 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
-import android.support.v4.app.Fragment;
-import android.util.Log;
 
 import com.andyridge.minutetimerlite.preferencesupport.PreferenceFragment;
 
-import static com.andyridge.minutetimerlite.lib.Constants.TAG;
 import static com.andyridge.minutetimerlite.lib.Constants.LOCALES;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener
@@ -49,20 +45,21 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         this.sharedPreferences = (this.sharedPreferences == null) ? sharedPreferences : this.sharedPreferences;
-        Log.d(TAG, "Preference changed: " + key);
 
-        if(key.equals(getString(R.string.sound)))
-            HomeActivity.sound = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.sound), "0"));
-        else if (key.equals(getString(R.string.read_aloud))) {
-            HomeActivity.readAloud = sharedPreferences.getBoolean(this.getString(R.string.read_aloud), false);
-            if (HomeActivity.readAloud) {
-                if (HomeActivity.tts.isLanguageAvailable(LOCALES[HomeActivity.locale]) != TextToSpeech.LANG_AVAILABLE) {
-                    readAloudDialog();
+        if (isAdded()) {
+            if (key.equals(getString(R.string.sound)))
+                HomeActivity.sound = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.sound), "0"));
+            else if (key.equals(getString(R.string.read_aloud))) {
+                HomeActivity.readAloud = sharedPreferences.getBoolean(this.getString(R.string.read_aloud), false);
+                if (HomeActivity.readAloud) {
+                    if (HomeActivity.tts.isLanguageAvailable(LOCALES[HomeActivity.locale]) != TextToSpeech.LANG_AVAILABLE) {
+                        readAloudDialog();
+                    }
                 }
+            } else if (key.equals(getString(R.string.locale))) {
+                HomeActivity.locale = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.locale), "0"));
+                HomeActivity.resetLocale();
             }
-        } else if (key.equals(getString(R.string.locale))) {
-            HomeActivity.locale = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.locale), "0"));
-            HomeActivity.resetLocale();
         }
     }
 

@@ -53,6 +53,7 @@ public class HomeActivity extends ActionBarActivity
     private CharSequence mTitle;
 
     private NavigationDrawerFragment.Page page;
+    private NavigationDrawerFragment.Page oldPage;
     private Fragment[] fragments;
 
     private int[][] data;
@@ -122,6 +123,18 @@ public class HomeActivity extends ActionBarActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
+
+        // Lots of things could be null in this set of steps, so check them all
+        oldPage = page;
+        if(oldPage != null) {
+            TimerFragment tf = (TimerFragment) fragments[oldPage.index];
+            if (tf != null) {
+                int[] fragmentData = tf.getData();
+                if (fragmentData != null) {
+                    data[oldPage.index] = fragmentData;
+                }
+            }
+        }
 
         if(position < NavigationDrawerFragment.Page.SETTINGS.index) {
             fragments[position] = TimerFragment.newInstance(Constants.Exercise.values()[position], data[position]);

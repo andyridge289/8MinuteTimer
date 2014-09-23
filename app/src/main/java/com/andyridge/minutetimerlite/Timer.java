@@ -39,7 +39,7 @@ public class Timer implements Runnable {
     public static Timer getInstance(Constants.Exercise exercise, int index, int currentTime, TimerFragment tf, boolean reset) {
         if(instance == null) {
             instance = new Timer(exercise, index, currentTime, tf);
-        } else if (reset) {
+        } else if (reset || instance.exercise.index != exercise.index) {
             instance.setData(exercise, index, currentTime, tf);
         } else {
             instance.setFragment(tf);
@@ -89,7 +89,8 @@ public class Timer implements Runnable {
 
         // Work out what to set the text to, and whether to stop
         if(currentTime < exercise.timings[index]) {
-            tf.setPie(currentTime, exercise.timings[index], true);
+            tf.setPie(currentTime, exercise.timings[index], index
+                    , true);
 
             if(currentTime == 0 && HomeActivity.readAloud) {
                 HomeActivity.speak(exercise.names[index]);

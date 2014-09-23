@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import static com.andyridge.minutetimerlite.lib.Constants.Exercise;
 import static com.andyridge.minutetimerlite.lib.Constants.PAUSED;
 import static com.andyridge.minutetimerlite.lib.Constants.RUNNING;
 import static com.andyridge.minutetimerlite.lib.Constants.STOPPED;
+import static com.andyridge.minutetimerlite.lib.Constants.TAG;
 
 public class TimerFragment extends Fragment {
 
@@ -57,6 +59,8 @@ public class TimerFragment extends Fragment {
         args.putInt(EXERCISE, exercise.index);
 
         if(data != null) {
+            Log.d(TAG, "Fragment got: " + data[0] + "," + data[1] + "," + data[2] + "," + data[3] + "]");
+
             args.putInt(EXERCISE_INDEX, data[1]);
             args.putInt(STATE, data[2]);
             args.putInt(TIME, data[3]);
@@ -174,16 +178,19 @@ public class TimerFragment extends Fragment {
         countdownTask = Timer.getInstance(exercise, index, currentTime, this, false);
         handler.post(countdownTask);
 
-//        if(countdownTask.stopped()) {
-//            countdownTask.unStop();
-//            handler.post(countdownTask);
-//        }
-
-
         return v;
     }
 
-    public void setPie(int time, int total, boolean invalidate) {
+    /**
+     * The handler runnable tells us to redraw so that we can keep track of the changes it makes.
+     *
+     * @param time The time that has passed for this exercise.
+     * @param total The
+     * @param invalidate
+     */
+    public void setPie(int time, int total, int index, boolean invalidate) {
+        this.currentTime = time;
+        this.index = index;
         pie.goToIndex(time, total, invalidate);
     }
 
@@ -215,8 +222,8 @@ public class TimerFragment extends Fragment {
      * Resume the fragment_timer
      */
     private void resume() {
-        startButton.setVisibility(View.VISIBLE);
-        pauseButton.setVisibility(View.GONE);
+        startButton.setVisibility(View.GONE);
+        pauseButton.setVisibility(View.VISIBLE);
         stopButton.setEnabled(true);
         ((HomeActivity) getActivity()).startTimer();
         startTimer(index, false);
@@ -336,6 +343,7 @@ public class TimerFragment extends Fragment {
     }
 
     public int[] getData() {
+        Log.d(TAG, "Fragment sending back: " + exercise.index + "," + index + "," + state + "," + currentTime + "]");
         return new int[]{ exercise.index, index, state, currentTime };
     }
 
