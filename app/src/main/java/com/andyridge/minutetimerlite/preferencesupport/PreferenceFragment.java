@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.Preference;
-import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.support.v4.app.Fragment;
@@ -50,7 +49,7 @@ public abstract class PreferenceFragment extends Fragment implements
     private static final int FIRST_REQUEST_CODE = 100;
 
     private static final int MSG_BIND_PREFERENCES = 1;
-    private Handler mHandler = new Handler() {
+    private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -177,7 +176,7 @@ public abstract class PreferenceFragment extends Fragment implements
      *
      * @param preferenceScreen The root {@link android.preference.PreferenceScreen} of the preference hierarchy.
      */
-    public void setPreferenceScreen(PreferenceScreen preferenceScreen) {
+    void setPreferenceScreen(PreferenceScreen preferenceScreen) {
         if (PreferenceManagerCompat.setPreferences(mPreferenceManager, preferenceScreen) && preferenceScreen != null) {
             mHavePrefs = true;
             if (mInitDone) {
@@ -192,7 +191,7 @@ public abstract class PreferenceFragment extends Fragment implements
      * @return The {@link android.preference.PreferenceScreen} that is the root of the preference
      * hierarchy.
      */
-    public PreferenceScreen getPreferenceScreen() {
+    PreferenceScreen getPreferenceScreen() {
         return PreferenceManagerCompat.getPreferenceScreen(mPreferenceManager);
     }
 
@@ -213,7 +212,7 @@ public abstract class PreferenceFragment extends Fragment implements
      *
      * @param preferencesResId The XML resource ID to inflate.
      */
-    public void addPreferencesFromResource(int preferencesResId) {
+    protected void addPreferencesFromResource(int preferencesResId) {
         requirePreferenceManager();
 
         setPreferenceScreen(PreferenceManagerCompat.inflateFromResource(mPreferenceManager, getActivity(),
@@ -226,12 +225,7 @@ public abstract class PreferenceFragment extends Fragment implements
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
                                          Preference preference) {
         //if (preference.getFragment() != null &&
-        if (
-                getActivity() instanceof OnPreferenceStartFragmentCallback) {
-            return ((OnPreferenceStartFragmentCallback) getActivity()).onPreferenceStartFragment(
-                    this, preference);
-        }
-        return false;
+        return getActivity() instanceof OnPreferenceStartFragmentCallback && ((OnPreferenceStartFragmentCallback) getActivity()).onPreferenceStartFragment(this, preference);
     }
 
     /**
@@ -266,7 +260,7 @@ public abstract class PreferenceFragment extends Fragment implements
         }
     }
 
-    public ListView getListView() {
+    ListView getListView() {
         ensureList();
         return mList;
     }
@@ -295,14 +289,13 @@ public abstract class PreferenceFragment extends Fragment implements
         mHandler.post(mRequestFocus);
     }
 
-    private OnKeyListener mListOnKeyListener = new OnKeyListener() {
+    private final OnKeyListener mListOnKeyListener = new OnKeyListener() {
 
         @Override
         public boolean onKey(View v, int keyCode, KeyEvent event) {
             Object selectedItem = mList.getSelectedItem();
             if (selectedItem instanceof Preference) {
-                @SuppressWarnings("unused")
-                View selectedView = mList.getSelectedView();
+//                View selectedView = mList.getSelectedView();
                 //return ((Preference)selectedItem).onKey(
                 //        selectedView, keyCode, event);
                 return false;

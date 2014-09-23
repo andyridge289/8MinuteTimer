@@ -26,9 +26,6 @@ public class AboutFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-//            exercise = getArguments().getInt(EXERCISE);
-        }
     }
 
     @Override

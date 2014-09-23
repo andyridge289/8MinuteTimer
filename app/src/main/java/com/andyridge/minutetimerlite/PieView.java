@@ -69,34 +69,17 @@ public class PieView extends View
 	@Override
 	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
-//        int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
         viewWidth = MeasureSpec.getSize(widthMeasureSpec);
-//        width = resolveSizeAndState(minw, widthMeasureSpec, 1);
         viewHeight = MeasureSpec.getSize(heightMeasureSpec);
 
         size = (int) (Math.min(viewWidth, viewHeight) * 0.8);
         textSize = (int) (0.5 * size);
 
-        // Whatever the width ends up being, ask for a height that would let the pie
-        // get as big as it can
-//        int minh = MeasureSpec.getSize(width) - getPaddingBottom() + getPaddingTop();
-//        height = resolveSizeAndState(MeasureSpec.getSize(minh), heightMeasureSpec, 0);
-
-
         // This only needs to be as tall as the pie chart itself
 		setMeasuredDimension(viewWidth, viewHeight);
 	}
-	
-    public void goToEnd(boolean paramBoolean)
-    {
-    	
-    	this.currentAngle = END;
-    	
-    	if (paramBoolean)
-    		invalidate();
-    }
 
-    public void goToStart(int time, boolean paramBoolean)
+    public void goToStart(int time)
     {
     	currentAngle = 0;
     	currentTime = time;
@@ -119,10 +102,6 @@ public class PieView extends View
     	
     	if(invalidate)
     		invalidate();
-    }
-
-    public void invalidate() {
-        super.invalidate();
     }
 
     protected void onDraw(Canvas canvas)
@@ -156,7 +135,7 @@ public class PieView extends View
         float textHeight = textPaint.descent() - textPaint.ascent();
         float textOffset = (textHeight / 2) - textPaint.descent();
 
-         RectF bounds = new RectF(0, 0, viewWidth, viewHeight);
+        RectF bounds = new RectF(0, 0, viewWidth, viewHeight);
         canvas.drawText("" + currentTime, bounds.centerX(), bounds.centerY() + textOffset, textPaint);
     }
     

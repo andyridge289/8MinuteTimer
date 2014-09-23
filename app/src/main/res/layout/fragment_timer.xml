@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:background="@color/actual_background"
+    >
     <TextView
         android:id="@+id/exercise_name"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textSize="24sp"
-        android:text="Bent Leg Inner Thigh Raise Left"
         android:gravity="center_horizontal"
         android:textColor="@color/text"
         android:layout_alignParentTop="true"
@@ -44,7 +45,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_above="@id/next_text"
-        >
+        android:baselineAligned="false">
         <LinearLayout
             android:layout_width="0dip"
             android:layout_height="wrap_content"
@@ -57,7 +58,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/start"
-                />
+                android:contentDescription="@string/start_exercise" />
             <ImageButton
                 android:clickable="true"
                 android:id="@+id/pause_button"
@@ -65,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/pause"
                 android:visibility="gone"
-                />
+                android:contentDescription="@string/pause_exercise" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="0dip"
@@ -79,7 +80,7 @@
                 android:clickable="true"
                 android:layout_height="wrap_content"
                 android:background="@drawable/stop"
-                />
+                android:contentDescription="@string/stop_exercise" />
         </LinearLayout>
     </LinearLayout>
     <com.andyridge.minutetimerlite.PieView

@@ -15,10 +15,10 @@ public abstract class Constants
         BUNS(3, "8 Minute Buns", TIMING_BUNS, NAME_BUNS),
         STRETCH(4, "8 Minute Stretch", TIMING_STRETCH, NAME_STRETCH);
 
-        public int index;
-        public String name;
-        public int[] timings;
-        public String[] names;
+        public final int index;
+        public final String name;
+        public final int[] timings;
+        public final String[] names;
 
         Exercise(int index, String name, int[] timings, String[] names) {
             this.index = index;
@@ -28,19 +28,8 @@ public abstract class Constants
         }
     }
 	
-	public static final String TIMING = "TIMING";
-	public static final String NAMES = "NAMES";
-	public static final String NAME = "NAME";
-	public static final String VALUE = "VALUE";
-
 	public static final String TAG = "8MIN";
-	
-	public static final String ABS = "8 Minute Abs";
-	public static final String ARMS = "8 Minute Arms";
-	public static final String LEGS = "8 Minute Legs";
-	public static final String BUNS = "8 Minute Buns";
-	public static final String STRETCH = "8 Minute Stretch";
-	
+
 	public static final int RUNNING = 0;
 	public static final int PAUSED = 1;
 	public static final int STOPPED = 2;
@@ -142,9 +131,4 @@ public abstract class Constants
 										ToneGenerator.TONE_SUP_PIP,}; 
 	
 	public static final Locale[] LOCALES = { Locale.getDefault(), Locale.UK, Locale.US };
-
-	public static enum Progress
-	{
-		STARTED, COMPLETED
-	}
 }

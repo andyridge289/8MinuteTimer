@@ -5,19 +5,16 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:background="@color/background">
-	    <LinearLayout 
-	    xmlns:android="http://schemas.android.com/apk/res/android"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:orientation="vertical"
-            >
 	    <TextView
 	        android:id="@+id/description"
 	        android:text="@string/about"
-	        android:textColor="@color/text"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:textStyle="bold"
+            android:layout_marginLeft="5dip"
+            android:layout_marginRight="5dip"
+            android:layout_marginStart="5dip"
+            android:layout_marginEnd="5dip"
 	        android:textSize="20sp"
 	        android:gravity="center">
 	    </TextView>
@@ -69,6 +66,4 @@
 	        android:textSize="20sp"
 	        android:gravity="center">
 	    </TextView>
-	
-	</LinearLayout>
 </LinearLayout>

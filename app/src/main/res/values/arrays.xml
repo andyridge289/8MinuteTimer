@@ -31,16 +31,4 @@
     	<item>3</item>
     </string-array>
     
-    <string-array name="locales">
-    	<item>Defaut</item>
-    	<item>EN-UK</item>
-    	<item>EN-US</item>
-    </string-array>
-    
-    <string-array name="locale_values">
-    	<item>0</item>
-    	<item>1</item>
-    	<item>2</item>
-    </string-array>
-
 </resources>

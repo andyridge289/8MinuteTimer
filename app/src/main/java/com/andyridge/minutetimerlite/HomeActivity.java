@@ -1,13 +1,8 @@
 package com.andyridge.minutetimerlite;
 
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
@@ -42,8 +37,8 @@ import static com.andyridge.minutetimerlite.lib.Constants.TAG;
 public class HomeActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TextToSpeech.OnInitListener {
 
-    public static final String PAGE = "page";
-    public static final String EXERCISE_DATA = "exercise_data";
+    private static final String PAGE = "page";
+    private static final String EXERCISE_DATA = "exercise_data";
 
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
@@ -53,16 +48,13 @@ public class HomeActivity extends ActionBarActivity
     private CharSequence mTitle;
 
     private NavigationDrawerFragment.Page page;
-    private NavigationDrawerFragment.Page oldPage;
     private Fragment[] fragments;
 
     private int[][] data;
 
-    private SharedPreferences sharedPreferences;
     public static int sound = 0;
     public static boolean readAloud = false;
     public static int locale = 0;
-//    public static boolean keepAwake = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +69,7 @@ public class HomeActivity extends ActionBarActivity
 
         setContentView(R.layout.activity_home);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Sort out the preferences
         sound = Integer.parseInt(sharedPreferences.getString(this.getString(R.string.sound), "0"));
@@ -125,13 +117,12 @@ public class HomeActivity extends ActionBarActivity
         // update the main content by replacing fragments
 
         // Lots of things could be null in this set of steps, so check them all
-        oldPage = page;
-        if(oldPage != null) {
-            TimerFragment tf = (TimerFragment) fragments[oldPage.index];
+        if(page != null) {
+            TimerFragment tf = (TimerFragment) fragments[page.index];
             if (tf != null) {
                 int[] fragmentData = tf.getData();
                 if (fragmentData != null) {
-                    data[oldPage.index] = fragmentData;
+                    data[page.index] = fragmentData;
                 }
             }
         }
@@ -159,7 +150,7 @@ public class HomeActivity extends ActionBarActivity
         restoreActionBar();
     }
 
-    public void restoreActionBar() {
+    void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
@@ -174,12 +165,6 @@ public class HomeActivity extends ActionBarActivity
             return true;
         }
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 
     public void onDestroy() {

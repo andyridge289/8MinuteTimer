@@ -1,16 +1,13 @@
 package com.andyridge.minutetimerlite;
 
-import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,7 +41,7 @@ public class TimerFragment extends Fragment {
     private int index = 0;
     private int currentTime = 0;
 
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
     private Timer countdownTask;
 
     /**
@@ -138,7 +135,7 @@ public class TimerFragment extends Fragment {
         nextText = (TextView) v.findViewById(R.id.nextText);
 
         pie = (PieView) v.findViewById(R.id.pieview);
-        pie.goToStart(exercise.timings[0], true);
+        pie.goToStart(exercise.timings[0]);
 
         nameText.setText(exercise.names[0]);
         nextText.setText(exercise.names[1]);
@@ -167,7 +164,7 @@ public class TimerFragment extends Fragment {
                 pauseButton.setVisibility(View.GONE);
                 break;
             case STOPPED:
-                pie.goToStart(exercise.timings[index], true);
+                pie.goToStart(exercise.timings[index]);
                 stopButton.setEnabled(false);
                 startButton.setVisibility(View.VISIBLE);
                 pauseButton.setVisibility(View.GONE);
@@ -186,19 +183,18 @@ public class TimerFragment extends Fragment {
      *
      * @param time The time that has passed for this exercise.
      * @param total The
-     * @param invalidate
      */
-    public void setPie(int time, int total, int index, boolean invalidate) {
+    public void setPie(int time, int total, int index) {
         this.currentTime = time;
         this.index = index;
-        pie.goToIndex(time, total, invalidate);
+        pie.goToIndex(time, total, true);
     }
 
     /**
      * Starts the fragment_timer.
      */
     private void start() {
-        pie.goToStart(exercise.timings[0], true);
+        pie.goToStart(exercise.timings[0]);
 
         if(index < exercise.timings.length - 1) {
             nextText.setText(exercise.names[index + 1]);
@@ -240,7 +236,7 @@ public class TimerFragment extends Fragment {
         index = 0;
         countdownTask = Timer.getInstance(exercise, index, currentTime, this, true);
 
-        pie.goToStart(exercise.timings[0], true);
+        pie.goToStart(exercise.timings[0]);
         nameText.setText(exercise.names[0]);
         if(index < exercise.timings.length - 1) {
             nextText.setText(exercise.names[index + 1]);
@@ -268,16 +264,6 @@ public class TimerFragment extends Fragment {
     }
 
     /**
-     * We need to make sure the fragment_timer doesn't carry on ticking when they press back. Also
-     * close the activity
-     */
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-
-    /**
      * Start the fragment_timer indicated by the index.
      *
      * @param i The index of the fragment_timer to start
@@ -292,7 +278,7 @@ public class TimerFragment extends Fragment {
         }
         else
         {
-            pie.goToStart(exercise.timings[index], true);
+            pie.goToStart(exercise.timings[index]);
             nameText.setText(exercise.names[index]);
         }
 
@@ -316,7 +302,7 @@ public class TimerFragment extends Fragment {
      *
      */
     void done()   {
-        pie.goToStart(exercise.timings[0], true);
+        pie.goToStart(exercise.timings[0]);
         nameText.setText(exercise.names[0]);
         nextText.setText(exercise.names[1]);
 
@@ -325,26 +311,14 @@ public class TimerFragment extends Fragment {
         stopButton.setEnabled(false);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    /**
-     * Called when the orientation of the application changes.
-     */
-    @Override
-    public void onConfigurationChanged(Configuration config) {
-        super.onConfigurationChanged(config);
-    }
-
     public void backPressed() {
         state = STOPPED;
     }
 
     public int[] getData() {
-        Log.d(TAG, "Fragment sending back: " + exercise.index + "," + index + "," + state + "," + currentTime + "]");
-        return new int[]{ exercise.index, index, state, currentTime };
+        if(exercise != null)
+            return new int[]{ exercise.index, index, state, currentTime };
+        else return null;
     }
 
     public int getState() {

@@ -24,7 +24,7 @@ public class Timer implements Runnable {
 
     private ArrayList<Long> times;
 
-    private ToneGenerator t = new ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME);
+    private final ToneGenerator t = new ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME);
 
     private TimerFragment tf;
 
@@ -48,14 +48,14 @@ public class Timer implements Runnable {
         return instance;
     }
 
-    public void setData(Constants.Exercise exercise, int index, int currentTime, TimerFragment tf) {
+    void setData(Constants.Exercise exercise, int index, int currentTime, TimerFragment tf) {
         this.exercise = exercise;
         this.index = index;
         this.currentTime = currentTime;
         this.tf = tf;
     }
 
-    public void setFragment(TimerFragment tf) {
+    void setFragment(TimerFragment tf) {
         this.tf = tf;
     }
 
@@ -89,8 +89,7 @@ public class Timer implements Runnable {
 
         // Work out what to set the text to, and whether to stop
         if(currentTime < exercise.timings[index]) {
-            tf.setPie(currentTime, exercise.timings[index], index
-                    , true);
+            tf.setPie(currentTime, exercise.timings[index], index);
 
             if(currentTime == 0 && HomeActivity.readAloud) {
                 HomeActivity.speak(exercise.names[index]);
